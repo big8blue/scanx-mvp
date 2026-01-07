@@ -3,3 +3,37 @@
   { "symbol": "TCS", "price": 0, "change": 0 },
   { "symbol": "INFY", "price": 0, "change": 0 }
 ]
+
+
+name: Update Market Data
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"   # every 15 minutes
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Fetch market data
+        run: |
+          curl -s "https://query1.finance.yahoo.com/v7/finance/quote?symbols=RELIANCE.NS,TCS.NS,INFY.NS" \
+          | jq '.quoteResponse.result
+            | map({
+                symbol: (.symbol | sub("\\.NS"; "")),
+                price: .regularMarketPrice,
+                change: .regularMarketChangePercent
+              })' > data/market.json
+
+      - name: Commit & push
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add data/market.json
+          git commit -m "Update market data" || exit 0
+          git push
