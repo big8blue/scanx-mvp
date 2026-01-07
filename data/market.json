@@ -1,6 +1,33 @@
-[
-  { "symbol": "RELIANCE", "price": 2845, "change": 1.2 },
-  { "symbol": "TCS", "price": 3890, "change": -0.6 },
-  { "symbol": "INFY", "price": 1620, "change": 0.9 }
-]
+async function loadMarketData() {
+  const symbols = ["RELIANCE.NS", "TCS.NS", "INFY.NS"];
+  const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbols.join(",")}`;
 
+  try {
+    const response = await fetch(url);
+    const result = await response.json();
+    const stocks = result.quoteResponse.result;
+
+    const tableBody = document.getElementById("market-data");
+    tableBody.innerHTML = "";
+
+    stocks.forEach(stock => {
+      const changePercent = stock.regularMarketChangePercent.toFixed(2);
+
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td class="p-3">${stock.symbol.replace(".NS","")}</td>
+        <td class="p-3">${stock.regularMarketPrice}</td>
+        <td class="p-3 ${changePercent >= 0 ? "text-green-400" : "text-red-400"}">
+          ${changePercent}%
+        </td>
+      `;
+      tableBody.appendChild(row);
+    });
+
+  } catch (error) {
+    console.error("Failed to fetch live data, using local JSON");
+  }
+}
+
+loadMarketData();
+setInterval(loadMarketData, 30000);
