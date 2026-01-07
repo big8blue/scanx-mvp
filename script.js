@@ -22,3 +22,9 @@ function loadMarketData() {
 }
 
 loadMarketData();
+
+loadMarketData();
+
+// Auto refresh every 30 seconds
+setInterval(loadMarketData, 30000);
+
